@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"fmt"
 	"regexp"
 	"strings"
 	"time"
@@ -12,7 +13,7 @@ type ProcessedLine struct {
 	Line     string
 }
 
-func findAndCollectDay(content, date string) []string {
+func findLinesInDay(content, date string) []string {
 	var linesInDay []string
 	inDay := false
 
@@ -37,13 +38,10 @@ func findAndCollectDay(content, date string) []string {
 func processLines(lines []string) ([]ProcessedLine, map[string][]time.Duration) {
 	durationsByTag := make(map[string][]time.Duration)
 	var processedLines []ProcessedLine
-	var prevTag string
-
-	// Regex to capture start, end, and the entire description part
-	lineRe := regexp.MustCompile(`^([0-9\.]+)-([0-9\.]+)\s+(.*)$`)
+	var tag string
 
 	for _, line := range lines {
-		duration, tag := processLine(line, &prevTag, lineRe)
+		duration, tag := processLine(line, &tag)
 		if duration > 0 {
 			processedLines = append(processedLines, ProcessedLine{Duration: duration, Line: line})
 			durationsByTag[tag] = append(durationsByTag[tag], duration)
@@ -52,7 +50,9 @@ func processLines(lines []string) ([]ProcessedLine, map[string][]time.Duration) 
 	return processedLines, durationsByTag
 }
 
-func processLine(line string, prevTag *string, lineRe *regexp.Regexp) (time.Duration, string) {
+var lineRe = regexp.MustCompile(`^([0-9\.]{1,5})-([0-9\.]{1,5})\s+(\[.*?\])?.*$`)
+
+func processLine(line string, prevTag *string) (time.Duration, string) {
 	caps := lineRe.FindStringSubmatch(line)
 	if caps == nil {
 		return 0, ""
@@ -60,51 +60,39 @@ func processLine(line string, prevTag *string, lineRe *regexp.Regexp) (time.Dura
 
 	startStr := caps[1]
 	endStr := caps[2]
-	fullDescription := caps[3] // This is the entire description part, e.g., "[TAG-1] desc" or "tagless desc" or "-"-"
-
-	var currentTag string
-
-	// Try to extract a bracketed tag from fullDescription
-	bracketedTagRe := regexp.MustCompile(`^\[(.*?)\]`)
-	bracketedTagCaps := bracketedTagRe.FindStringSubmatch(strings.TrimSpace(fullDescription))
-
-	if bracketedTagCaps != nil {
-		currentTag = bracketedTagCaps[0] // Use the bracketed tag including brackets
-	} else {
-		currentTag = strings.TrimSpace(fullDescription) // Otherwise, the entire description is the tag
+	tag := caps[3]
+	if tag == "" {
+		tag = line[len(fmt.Sprintf("%s-%s ", startStr, endStr)):]
 	}
 
-	// Handle the -"-" convention
-	if strings.HasPrefix(currentTag, `-"-`) {
-		if *prevTag != "" {
-			currentTag = *prevTag
-		}
-		// If *prevTag is empty, currentTag remains "-"-" which is correct for the first "-"-" line
+	if strings.HasPrefix(tag, `-"-`) {
+		tag = *prevTag
 	} else {
-		// If it's not "-"-" or if it's the first line, update prevTag
-		*prevTag = currentTag
+		*prevTag = tag
+	}
+
+	withMins := func(t string) string {
+		if !strings.Contains(t, ".") {
+			return t + ".00"
+		}
+		return t
 	}
 
 	layout := "15.04"
-	start, err1 := time.Parse(layout, withMins(startStr))
-	end, err2 := time.Parse(layout, withMins(endStr))
-
-	if err1 != nil || err2 != nil {
+	start, err := time.Parse(layout, withMins(startStr))
+	if err != nil {
+		return 0, ""
+	}
+	end, err := time.Parse(layout, withMins(endStr))
+	if err != nil {
 		return 0, ""
 	}
 
-	return end.Sub(start), currentTag
-}
-
-func withMins(timeStr string) string {
-	if !strings.Contains(timeStr, ".") {
-		return timeStr + ".00"
-	}
-	return timeStr
+	return end.Sub(start), tag
 }
 
 func summarizeDurations(durationsByTag map[string][]time.Duration) (map[string]time.Duration, time.Duration) {
-	summary := make(map[string]time.Duration)
+	summary := make(map[string]time.Duration, len(durationsByTag))
 	var total time.Duration
 
 	for tag, durations := range durationsByTag {
