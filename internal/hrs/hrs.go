@@ -1,4 +1,4 @@
-package main
+package hrs
 
 import (
 	"bufio"
@@ -13,7 +13,7 @@ type ProcessedLine struct {
 	Line     string
 }
 
-func findLinesInDay(content, date string) []string {
+func FindLinesInDay(content, date string) []string {
 	var linesInDay []string
 	inDay := false
 
@@ -35,7 +35,7 @@ func findLinesInDay(content, date string) []string {
 	return linesInDay
 }
 
-func processLines(lines []string) ([]ProcessedLine, map[string][]time.Duration) {
+func ProcessLines(lines []string) ([]ProcessedLine, map[string][]time.Duration) {
 	durationsByTag := make(map[string][]time.Duration)
 	var processedLines []ProcessedLine
 	var tag string
@@ -91,7 +91,7 @@ func processLine(line string, prevTag *string) (time.Duration, string) {
 	return end.Sub(start), tag
 }
 
-func summarizeDurations(durationsByTag map[string][]time.Duration) (map[string]time.Duration, time.Duration) {
+func SummarizeDurations(durationsByTag map[string][]time.Duration) (map[string]time.Duration, time.Duration) {
 	summary := make(map[string]time.Duration, len(durationsByTag))
 	var total time.Duration
 

@@ -1,9 +1,10 @@
-package main
+package hrs_test
 
 import (
 	"testing"
 	"time"
 
+	"github.com/istonikula/hrs-go/internal/hrs"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -25,13 +26,13 @@ bar
 baz
 `
 
-	assert.Equal(t, []string{"27.2", "--", "foo"}, findLinesInDay(input, "27.2"))
-	assert.Equal(t, []string{"28.2 (day info)", "--", "bar"}, findLinesInDay(input, "28.2"))
-	assert.Equal(t, []string{"1.3  day info", "--", "baz"}, findLinesInDay(input, "1.3"))
+	assert.Equal(t, []string{"27.2", "--", "foo"}, hrs.FindLinesInDay(input, "27.2"))
+	assert.Equal(t, []string{"28.2 (day info)", "--", "bar"}, hrs.FindLinesInDay(input, "28.2"))
+	assert.Equal(t, []string{"1.3  day info", "--", "baz"}, hrs.FindLinesInDay(input, "1.3"))
 }
 
 func TestProcessLines(t *testing.T) {
-	lines, durationsByTag := processLines([]string{
+	lines, durationsByTag := hrs.ProcessLines([]string{
 		"8-9 desc without tag 1",
 		"9-9.30 [tag1] desc",
 		`9.45-10 -"-`,
@@ -42,7 +43,7 @@ func TestProcessLines(t *testing.T) {
 		"16-17   [tag1] NOTE: whitespace before tag",
 	})
 
-	assert.Equal(t, []ProcessedLine{
+	assert.Equal(t, []hrs.ProcessedLine{
 		{Duration: time.Hour, Line: "8-9 desc without tag 1"},
 		{Duration: 30 * time.Minute, Line: "9-9.30 [tag1] desc"},
 		{Duration: 15 * time.Minute, Line: `9.45-10 -"-`},
@@ -61,7 +62,7 @@ func TestProcessLines(t *testing.T) {
 }
 
 func TestSummarizeDurations(t *testing.T) {
-	summary, total := summarizeDurations(map[string][]time.Duration{
+	summary, total := hrs.SummarizeDurations(map[string][]time.Duration{
 		"desc without tag 2": {30 * time.Minute, 15 * time.Minute},
 		"[tag1]":             {30 * time.Minute, 15 * time.Minute, 105 * time.Minute},
 		"desc without tag 1": {time.Hour, 135 * time.Minute},
