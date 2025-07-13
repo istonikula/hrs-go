@@ -8,7 +8,7 @@ import (
 	"github.com/istonikula/hrs-go/internal/hrs"
 )
 
-func ProcessedLines(lines []hrs.ProcessedLine) {
+func Lines(lines []hrs.ProcessedLine) {
 	fmt.Println("----")
 	for _, line := range lines {
 		fmt.Printf("%s %s\n", Duration{line.Duration}.Line(), line.Line)
@@ -29,7 +29,7 @@ func Summary(summary map[string]time.Duration) {
 	}
 }
 
-func TotalAndDiff(total time.Duration) {
+func Total(total time.Duration) {
 	fmt.Println("----")
 	fullDay := time.Hour*7 + time.Minute*30
 	diff := total - fullDay

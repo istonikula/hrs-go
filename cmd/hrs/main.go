@@ -27,7 +27,7 @@ func main() {
 	processedLines, durationsByTag := hrs.ProcessLines(linesInDay)
 	summary, total := hrs.SummarizeDurations(durationsByTag)
 
-	render.ProcessedLines(processedLines)
+	render.Lines(processedLines)
 	render.Summary(summary)
-	render.TotalAndDiff(total)
+	render.Total(total)
 }
