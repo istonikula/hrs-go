@@ -10,7 +10,7 @@ build: ## Build the distributable
 
 .PHONY: test
 test: ## Run short tests
-	go tool gotestsum --format=testname -- -short ./...
+	go tool gotestsum --format=testname -- -short -count=1 ./...
 
 .PHONY: clean
 clean: ## Clean intermediate build products and remove distributable

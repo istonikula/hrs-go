@@ -11,7 +11,7 @@ import (
 func ProcessedLines(lines []hrs.ProcessedLine) {
 	fmt.Println("----")
 	for _, line := range lines {
-		fmt.Printf("%s %s\n", HumanDuration{line.Duration}.Line(), line.Line)
+		fmt.Printf("%s %s\n", Duration{line.Duration}.Line(), line.Line)
 	}
 }
 
@@ -25,7 +25,7 @@ func Summary(summary map[string]time.Duration) {
 	sort.Strings(tags)
 
 	for _, tag := range tags {
-		fmt.Printf("%s %s\n", HumanDuration{summary[tag]}.Tag(), tag)
+		fmt.Printf("%s %s\n", Duration{summary[tag]}.Tag(), tag)
 	}
 }
 
@@ -35,8 +35,8 @@ func TotalAndDiff(total time.Duration) {
 	diff := total - fullDay
 
 	if diff == 0 {
-		fmt.Println(HumanDuration{total}.Total())
+		fmt.Println(Duration{total}.Total())
 	} else {
-		fmt.Printf("%s %s\n", HumanDuration{total}.Total(), HumanDuration{diff}.Diff())
+		fmt.Printf("%s %s\n", Duration{total}.Total(), Duration{diff}.Diff())
 	}
 }
