@@ -12,6 +12,10 @@ build: ## Build the distributable
 test: ## Run short tests
 	go tool gotestsum --format=testname -- -short -count=1 ./...
 
+.PHONY: e2e
+e2e: build ## Run e2e tests
+	go tool gotestsum --format=testname -- --count=1 -run ^TestE2E$$ github.com/istonikula/hrs-go/cmd/hrs
+
 .PHONY: clean
 clean: ## Clean intermediate build products and remove distributable
 	go clean
